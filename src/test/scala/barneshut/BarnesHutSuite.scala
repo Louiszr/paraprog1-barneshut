@@ -112,6 +112,56 @@ import FloatOps._
     assert(res, s"Body not found in the right sector")
   }
 
+  test("'SectorMatrix.+=' should fix out of bound body (greater than)") {
+    val body = new Body(5, 25, 47, 0.1f, 0.1f)
+    val boundaries = new Boundaries
+    boundaries.minX = 0
+    boundaries.minY = 0
+    boundaries.maxX = 3
+    boundaries.maxY = 3
+    val sm = new SectorMatrix(boundaries, 3)
+    sm += body
+    val res = sm(2, 2).size == 1 && sm(2, 2).find(_ == body).isDefined
+    assert(res, s"out of bound body not fixed")
+  }
+
+  test("'SectorMatrix.+=' should fix out of bound body (less than)") {
+    val body = new Body(5, 0, 0, 0.1f, 0.1f)
+    val boundaries = new Boundaries
+    boundaries.minX = 1
+    boundaries.minY = 1
+    boundaries.maxX = 3
+    boundaries.maxY = 3
+    val sm = new SectorMatrix(boundaries, 3)
+    sm += body
+    val res = sm(0, 0).size == 1 && sm(0, 0).find(_ == body).isDefined
+    assert(res, s"out of bound body not fixed")
+  }
+
+  test("'SectorMatrix.combine' should combine two secMats with bodies of (25, 47), (1, 1) and (26, 47)") {
+    val body1 = new Body(5, 25, 47, 0.1f, 0.1f)
+    val body2 = new Body(5, 1, 1, 0.1f, 0.1f)
+    val body3 = new Body(5, 26, 47, 0.1f, 0.1f)
+    val boundaries = new Boundaries()
+    boundaries.minX = 1
+    boundaries.minY = 1
+    boundaries.maxX = 97
+    boundaries.maxY = 97
+    val secMat1 = new SectorMatrix(boundaries, SECTOR_PRECISION)
+    secMat1 += body1
+    secMat1 += body2
+    val secMat2 = new SectorMatrix(boundaries, SECTOR_PRECISION)
+    secMat2 += body3
+    val secMat3 = secMat1 combine secMat2
+    val res = secMat3(2, 3).size == 2 &&
+      secMat3(2, 3).find(_ == body1).isDefined &&
+      secMat3(2, 3).find(_ == body3).isDefined &&
+      secMat3(0, 0).find(_ == body2).isDefined
+    assert(res, s"Bodies ont found in the right sectors")
+  }
+
+  // TODO: How to test Simulator methods?
+
 }
 
 object FloatOps {
