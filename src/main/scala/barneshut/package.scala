@@ -149,16 +149,13 @@ package object barneshut {
         case Leaf(_, _, _, bodies) => bodies.foreach(body => addForce(body.mass, body.x, body.y))
           // add force contribution of each body by calling addForce
         case f @ Fork(_, _, _, _) =>
-          f.subQuads.foreach( q => {
-            val isFarEnough: Boolean = (q.size / distance(q.massX, q.massY, this.x, this.y)) < theta
-            if (isFarEnough) {
-              addForce(q.mass, q.massX, q.massY)
-            }
-            else {
-              traverse(q)
-            }
+          val isFarEnough: Boolean = (f.size / distance(f.massX, f.massY, x, y)) < theta
+          if (isFarEnough) {
+            addForce(f.mass, f.massX, f.massY)
           }
-          )
+          else {
+            f.subQuads.foreach(traverse)
+          }
           // see if node is far enough from the body,
           // or recursion is needed
       }
@@ -189,7 +186,6 @@ package object barneshut {
       val y = ((math.min(b.y, boundaries.maxY) - boundaries.minY) / sectorSize).floor.toInt
         .min(sectorPrecision - 1)
         .max(0)
-      // TODO: Does this update val matrix?
       apply(x, y) += b
       this
     }
